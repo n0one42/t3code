@@ -14,11 +14,14 @@ On web and desktop, open the Diff pane source picker and choose **Commits** to r
 commit at a time. The list shows the newest 100 commits in the branch comparison. A merge commit
 shows its changes against its first parent.
 
-A commit link from a supported code host opens in the Diff pane when the thread's repository has
-that commit locally, on any branch. Otherwise a pull request commit link opens the pull request. Other
+A plain click on a commit link from a supported code host opens in the Diff pane when the
+thread's repository has that commit locally, on any branch. Otherwise a pull request commit
+link opens the pull request. Other
 commit links follow your **Open links in** setting; on web, when that opens a new tab, T3 Code first
-shows an **Open link** button. Command/Ctrl+Click always opens the link in your browser. Commit links follow the **Open pull requests in T3 Code**
-setting in **Settings → Diffs**.
+shows an **Open link** button. On web and desktop, middle-clicking a chat link or a thread's pull
+request link opens it in the browser panel when available, regardless of these settings.
+Command/Ctrl+Click always opens the link in your system browser. Commit links follow the
+**Open pull requests in T3 Code** setting in **Settings → Diffs**.
 
 ## Connect an account
 

@@ -156,6 +156,7 @@ function LinkRowImpl({
       <a
         href={link.url}
         onClick={(event) => openPrLink(event, link.url, threadRef)}
+        onAuxClick={(event) => openPrLink(event, link.url, threadRef)}
         // Outside drops use the URL; the composer uses this context-chip payload.
         onDragStart={
           snapshot === null

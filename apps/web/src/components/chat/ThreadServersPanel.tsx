@@ -65,9 +65,8 @@ export function ThreadServersPanel(props: {
 
   const open = async (server: DiscoveredLocalServer, event: MouseEvent<HTMLElement>) => {
     if (event.button > 1) return;
-    // Like links: modified and middle clicks go to the system browser.
-    if (event.metaKey || event.ctrlKey || event.button === 1) {
-      event.preventDefault();
+    event.preventDefault();
+    if (event.metaKey || event.ctrlKey) {
       const url = resolveDiscoveredServerUrl(props.environmentId, server.url);
       await readLocalApi()
         ?.shell.openExternal(url)
