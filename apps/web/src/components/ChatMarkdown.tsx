@@ -1139,6 +1139,43 @@ const CHAT_MARKDOWN_COMPONENTS = {
       const canOpenInPreview =
         canOperatePreview && Boolean(threadRef && isPreviewAvailableFor(threadRef.environmentId));
       const linkChildren = <MarkdownLinkContext value>{children}</MarkdownLinkContext>;
+      const openWebLink = (event: ReactMouseEvent<HTMLAnchorElement>) => {
+        if (!href || event.defaultPrevented) return;
+        if (
+          resolveLinkTarget({
+            url: href,
+            event,
+            preference: linkTargetPreference,
+            canOpenInApp: canOpenInPreview,
+          }) !== "app"
+        ) {
+          // Open desktop Alt-clicks before Chromium downloads them so link routers can read the held key.
+          if (isElectron && event.altKey) {
+            event.preventDefault();
+            event.stopPropagation();
+            void readLocalApi()
+              ?.shell.openExternal(href)
+              .catch((cause) =>
+                reportMarkdownActionFailure(
+                  { operation: "open-link-external", target: href },
+                  cause,
+                ),
+              );
+          }
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        void openExternalLinkInPreview(href).then((result) => {
+          if (result._tag === "Success" || isAtomCommandInterrupted(result)) return;
+          reportMarkdownActionFailure(
+            { operation: "open-link-in-preview", target: href },
+            result.cause,
+          );
+          if (squashAtomCommandFailure(result) instanceof BrowserSettingsReadError) return;
+          void readLocalApi()?.shell.openExternal(href);
+        });
+      };
       const link = (
         <a
           {...props}
@@ -1182,41 +1219,11 @@ const CHAT_MARKDOWN_COMPONENTS = {
             ) {
               return;
             }
-            if (event.defaultPrevented) return;
-            if (
-              resolveLinkTarget({
-                url: href,
-                event,
-                preference: linkTargetPreference,
-                canOpenInApp: canOpenInPreview,
-              }) !== "app"
-            ) {
-              // Open desktop Alt-clicks before Chromium downloads them so link routers can read the held key.
-              if (isElectron && event.altKey) {
-                event.preventDefault();
-                event.stopPropagation();
-                void readLocalApi()
-                  ?.shell.openExternal(href)
-                  .catch((cause) =>
-                    reportMarkdownActionFailure(
-                      { operation: "open-link-external", target: href },
-                      cause,
-                    ),
-                  );
-              }
-              return;
-            }
-            event.preventDefault();
-            event.stopPropagation();
-            void openExternalLinkInPreview(href).then((result) => {
-              if (result._tag === "Success" || isAtomCommandInterrupted(result)) return;
-              reportMarkdownActionFailure(
-                { operation: "open-link-in-preview", target: href },
-                result.cause,
-              );
-              if (squashAtomCommandFailure(result) instanceof BrowserSettingsReadError) return;
-              void readLocalApi()?.shell.openExternal(href);
-            });
+            openWebLink(event);
+          }}
+          onAuxClick={(event) => {
+            props.onAuxClick?.(event);
+            if (event.button === 1) openWebLink(event);
           }}
           onContextMenu={(event) => {
             if (!href || !faviconHost) return;

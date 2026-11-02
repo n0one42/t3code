@@ -278,6 +278,7 @@ function PullRequestBadge({
       "aria-label": presentation.label,
       onPointerDown: (event: MouseEvent<HTMLElement>) => event.stopPropagation(),
       onClick,
+      onAuxClick: opensList ? undefined : onOpenPullRequest,
     },
   });
   return (
@@ -401,6 +402,7 @@ function ThreadPullRequestMiniListItem({
           className="flex min-w-0 items-center gap-2 rounded-sm px-1 py-1 hover:bg-accent focus-visible:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
           onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => onOpenPullRequest(event, url)}
+          onAuxClick={(event) => onOpenPullRequest(event, url)}
         >
           {content}
         </a>

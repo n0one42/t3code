@@ -39,7 +39,7 @@ export function usePullRequestPreviewTarget(environmentId: EnvironmentId | null,
   });
 }
 
-function shouldOpenPullRequestExternally(
+function shouldOpenPullRequestInBrowser(
   event: Pick<MouseEvent<HTMLElement>, "metaKey" | "ctrlKey"> &
     Partial<Pick<MouseEvent<HTMLElement>, "button">>,
 ): boolean {
@@ -71,7 +71,7 @@ export function useOpenChangeRequestLink(
   });
   const openLink = useOpenLink(threadRef);
   return (event, targetUrl, targetThreadRef, targetEnvironmentId, onCommitUnavailable) => {
-    if (!openInApp || shouldOpenPullRequestExternally(event)) return false;
+    if (!openInApp || shouldOpenPullRequestInBrowser(event)) return false;
     const resolvedThreadRef = targetThreadRef ?? threadRef;
     const resolvedPanelRef = panelRef ?? resolvedThreadRef;
     const openPullRequest = () => {
@@ -235,11 +235,16 @@ export function useOpenPrLink(threadRef?: ScopedThreadRef) {
   return (event: MouseEvent<HTMLElement>, prUrl: string, targetThreadRef?: ScopedThreadRef) => {
     if (event.button > 1) return false;
     event.stopPropagation();
-    const openInBrowser = shouldOpenPullRequestExternally(event);
+    const openInBrowser = shouldOpenPullRequestInBrowser(event);
+    const openMiddleClickInApp =
+      event.button === 1 &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      canOpenLinksInApp(targetThreadRef ?? threadRef);
     const isAnchor =
       event.currentTarget instanceof HTMLAnchorElement && event.currentTarget.href.length > 0;
-    // Native links handle modified clicks; buttons still need openExternal.
-    if (openInBrowser && isAnchor) return false;
+    // Preserve native system-browser clicks when the integrated browser cannot handle them.
+    if (openInBrowser && isAnchor && !openMiddleClickInApp) return false;
 
     event.preventDefault();
     if (!openInBrowser && openChangeRequest(event, prUrl, targetThreadRef)) return true;
@@ -254,6 +259,6 @@ export function useOpenPrLink(threadRef?: ScopedThreadRef) {
         }),
       );
     });
-    return false;
+    return openMiddleClickInApp;
   };
 }
